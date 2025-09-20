@@ -1,0 +1,39 @@
+name: "reid_model"
+platform: "tensorrt_plan" 
+max_batch_size: 100
+default_model_filename: "model.plan"
+
+input [
+  {
+    name: "input"
+    data_type: TYPE_FP32
+    format: FORMAT_NCHW
+    dims: [ 3, 256, 128 ]
+  }
+]
+
+output [
+  {
+    name: "output"
+    data_type: TYPE_FP32
+    dims: [ 256 ]
+  }
+]
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_GPU
+    gpus: [ 0 ]
+  }
+]
+
+dynamic_batching {
+  max_queue_delay_microseconds: 100
+}
+
+optimization {
+  cuda {
+    graphs: true
+  }
+}

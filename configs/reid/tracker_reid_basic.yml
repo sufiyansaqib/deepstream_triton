@@ -1,0 +1,60 @@
+%YAML:1.0
+################################################################################
+# Basic ReID Tracker Configuration for CPU Testing
+# Simplified configuration that works without GPU-dependent ReID models
+################################################################################
+
+BaseConfig:
+  minDetectorConfidence: 0.25    # Minimum confidence for detection consideration
+
+TargetManagement:
+  enableBboxUnClipping: 1        # Unclip bboxes at image borders
+  maxTargetsPerStream: 150       # Max targets per stream
+  
+  # [Creation & Termination Policy]
+  minIouDiff4NewTarget: 0.5      # IoU threshold for new target creation
+  minTrackerConfidence: 0.2      # Confidence threshold for shadow tracking
+  probationAge: 3                # Frames to confirm new targets
+  maxShadowTrackingAge: 60       # Shadow tracking duration
+  earlyTerminationAge: 1         # Early termination threshold
+
+TrajectoryManagement:
+  useUniqueID: 1                 # Use 64-bit unique IDs
+  enableReAssoc: 1               # Enable re-association
+
+DataAssociator:
+  dataAssociatorType: 0          # DEFAULT associator
+  associationMatcherType: 1      # CASCADED matching
+  checkClassMatch: 1             # Only associate same-class objects
+  
+  # [Association Metrics]
+  minMatchingScore4Overall: 0.0      # Overall score threshold
+  minMatchingScore4SizeAndShape: 0.6 # Size/shape score
+  minMatchingScore4Appearance: 0.4   # Appearance score
+  minMatchingScore4Motion: 0.2       # Motion score
+
+StateEstimator:
+  stateEstimatorType: 1          # SIMPLE estimator
+  
+  # [Dynamics Modeling]
+  processNoiseVar4Loc: 2.0       # Location noise variance
+  processNoiseVar4Size: 1.0      # Size noise variance
+  processNoiseVar4Vel: 0.1       # Velocity noise variance
+  measurementNoiseVar4Detector: 4.0   # Detector noise variance
+  measurementNoiseVar4Tracker: 16.0   # Tracker noise variance
+
+# ReID disabled for CPU compatibility
+ReID:
+  reidType: 0                    # DUMMY mode (no ReID model required)
+  batchSize: 1                   # Minimal batch size
+  workspaceSize: 100             # Minimal workspace
+  reidFeatureSize: 128           # Basic feature size
+  reidHistorySize: 50            # Limited history
+  inferDims: [128, 64, 3]        # Smaller dimensions
+  networkMode: 0                 # FP32 mode
+  inputOrder: 1                  # NHWC format
+
+FeatureMatching:
+  featureMatchingAlgorithm: 1    # Hungarian algorithm
+  matchingThreshold: 0.7         # Standard threshold
+  trajectorySetSize: 20          # Basic trajectory set

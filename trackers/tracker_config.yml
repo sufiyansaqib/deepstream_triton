@@ -26,13 +26,13 @@ BaseConfig:
 
 TargetManagement:
   enableBboxUnClipping: 1    # In case the bbox is likely to be clipped by image border, unclip bbox
-  maxTargetsPerStream: 150   # Max number of targets to track per stream. Recommended to set >10. Note: this value should account for the targets being tracked in shadow mode as well. Max value depends on the GPU memory capacity
-
+  maxTargetsPerStream: 200   # Increased for multi-camera tracking with ReID
+  
   # [Creation & Termination Policy]
   minIouDiff4NewTarget: 0.5  # If the IOU between the newly detected object and any of the existing targets is higher than this threshold, this newly detected object will be discarded.
   minTrackerConfidence: 0.2  # If the confidence of an object tracker is lower than this on the fly, then it will be tracked in shadow mode. Valid Range: [0.0, 1.0]
   probationAge: 3            # If the target's age exceeds this, the target will be considered to be valid.
-  maxShadowTrackingAge: 30   # Max length of shadow tracking. If the shadowTrackingAge exceeds this limit, the tracker will be terminated.
+  maxShadowTrackingAge: 90   # Extended for cross-camera gaps and occlusions
   earlyTerminationAge: 1     # If the trackingAge does not exceed this, the target will be terminated early.
 
 TrajectoryManagement:
@@ -61,16 +61,20 @@ StateEstimator:
   measurementNoiseVar4Tracker: 16.0    # Measurement noise variance for tracker bbox
 
 ReID:
-  reidType: 0     # the type of reid among { DUMMY=0, NvDCF=1, Reid=2 }
+  reidType: 2     # Enable Reid based reassociation for multi-camera tracking
   batchSize: 100  # Batch size of reid network
   workspaceSize: 1000    # Workspace size to be used by reid engine, in MB
   reidFeatureSize: 256   # Size of reid feature
   reidHistorySize: 100   # Max number of reid features kept for one object
   inferDims: [256, 128, 3]   # H, W, C
-  networkMode: 0    # reid network engine precision mode among {fp32=0, fp16=1, int8=2 }
-  inputOrder: 1     # reid network input order among { NCHW=0, NHWC=1 }. Batch will be converted to the specified order before inference.
+  networkMode: 1    # FP16 precision for performance
+  inputOrder: 0     # NCHW format for optimal performance
+  reidExtractionInterval: 0  # Extract features every frame for continuous tracking
+  addFeatureNormalization: 1 # L2 normalize features for better matching
+  keepAspc: 1      # Maintain aspect ratio when resizing
+  netScaleFactor: 0.01735207  # Normalization factor for ReID network
 
 FeatureMatching:
-  featureMatchingAlgorithm: 1 # algorithm among { GREEDY_DISTANCE=0, HUNGARIAN=1 }
-  matchingThreshold: 0.7      # threshold to determine if the target is being tracked
-  trajectorySetSize: 20       # number of objects taken into consideration for feature matching
+  featureMatchingAlgorithm: 1 # Hungarian algorithm for optimal assignment
+  matchingThreshold: 0.75     # Increased threshold for better cross-camera matching
+  trajectorySetSize: 50       # Increased for multi-camera tracking scenarios

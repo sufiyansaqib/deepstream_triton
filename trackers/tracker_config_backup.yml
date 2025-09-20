@@ -1,0 +1,76 @@
+%YAML:1.0
+################################################################################
+# Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+################################################################################
+
+BaseConfig:
+  minDetectorConfidence: 0.25    # If the confidence of a detector bbox is lower than this, then it won't be considered for tracking
+
+TargetManagement:
+  enableBboxUnClipping: 1    # In case the bbox is likely to be clipped by image border, unclip bbox
+  maxTargetsPerStream: 150   # Max number of targets to track per stream. Recommended to set >10. Note: this value should account for the targets being tracked in shadow mode as well. Max value depends on the GPU memory capacity
+
+  # [Creation & Termination Policy]
+  minIouDiff4NewTarget: 0.5  # If the IOU between the newly detected object and any of the existing targets is higher than this threshold, this newly detected object will be discarded.
+  minTrackerConfidence: 0.2  # If the confidence of an object tracker is lower than this on the fly, then it will be tracked in shadow mode. Valid Range: [0.0, 1.0]
+  probationAge: 3            # If the target's age exceeds this, the target will be considered to be valid.
+  maxShadowTrackingAge: 30   # Max length of shadow tracking. If the shadowTrackingAge exceeds this limit, the tracker will be terminated.
+  earlyTerminationAge: 1     # If the trackingAge does not exceed this, the target will be terminated early.
+
+TrajectoryManagement:
+  useUniqueID: 1             # Use 64-bit long Unique ID when assignTrackerId is set to false. Default is [true]
+  enableReAssoc: 1           # Enable Re-Assoc
+
+DataAssociator:
+  dataAssociatorType: 0      # the type of data associator among { DEFAULT= 0 }
+  associationMatcherType: 0  # the type of matching algorithm among { GREEDY=0, CASCADED=1 }
+  checkClassMatch: 1         # If checked, only the same-class objects are associated with each other. Default: true
+
+  # [Association Metric: Thresholds for valid candidates]
+  minMatchingScore4Overall: 0.0    # Min total score
+  minMatchingScore4SizeAndShape: 0.6    # Min bbox size/shape score
+  minMatchingScore4Appearance: 0.4      # Min appearance score
+  minMatchingScore4Motion: 0.2          # Min motion score
+
+StateEstimator:
+  stateEstimatorType: 1      # the type of state estimator among { DUMMY=0, SIMPLE=1, REGULAR=2 }
+
+  # [Dynamics Modeling]
+  processNoiseVar4Loc: 2.0   # Process noise variance for bbox center
+  processNoiseVar4Size: 1.0  # Process noise variance for bbox size
+  processNoiseVar4Vel: 0.1   # Process noise variance for velocity
+  measurementNoiseVar4Detector: 4.0    # Measurement noise variance for detector bbox
+  measurementNoiseVar4Tracker: 16.0    # Measurement noise variance for tracker bbox
+
+ReID:
+  reidType: 0     # the type of reid among { DUMMY=0, NvDCF=1, Reid=2 }
+  batchSize: 100  # Batch size of reid network
+  workspaceSize: 1000    # Workspace size to be used by reid engine, in MB
+  reidFeatureSize: 256   # Size of reid feature
+  reidHistorySize: 100   # Max number of reid features kept for one object
+  inferDims: [256, 128, 3]   # H, W, C
+  networkMode: 0    # reid network engine precision mode among {fp32=0, fp16=1, int8=2 }
+  inputOrder: 1     # reid network input order among { NCHW=0, NHWC=1 }. Batch will be converted to the specified order before inference.
+
+FeatureMatching:
+  featureMatchingAlgorithm: 1 # algorithm among { GREEDY_DISTANCE=0, HUNGARIAN=1 }
+  matchingThreshold: 0.7      # threshold to determine if the target is being tracked
+  trajectorySetSize: 20       # number of objects taken into consideration for feature matching

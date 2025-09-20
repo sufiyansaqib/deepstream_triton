@@ -28,7 +28,7 @@ sync=0
 qos=0
 bitrate=2000000
 profile=0
-output-file=/workspace/output/dual_video_detections_0.mp4
+output-file=/workspace/output/reid_video_camera_0.mp4
 source-id=0
 
 [sink1]
@@ -41,7 +41,7 @@ sync=0
 qos=0
 bitrate=2000000
 profile=0
-output-file=/workspace/output/dual_video_detections_1.mp4
+output-file=/workspace/output/reid_video_camera_1.mp4
 source-id=1
 
 [tiled-display]

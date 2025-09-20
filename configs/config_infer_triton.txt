@@ -48,6 +48,7 @@ infer_config {
 
   extra {
     copy_input_to_host_buffers: false
+    output_tensor_meta: true
   }
 }
 

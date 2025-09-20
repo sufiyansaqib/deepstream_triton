@@ -68,7 +68,7 @@ services:
       bash -c "
       echo 'Waiting for Triton server to be ready...' &&
       sleep 10 &&
-      deepstream-app -c configs/deepstream_dual_video_triton.txt
+      deepstream-app -c configs/reid/deepstream_reid_enabled.txt
       "
     networks:
       - deepstream-triton

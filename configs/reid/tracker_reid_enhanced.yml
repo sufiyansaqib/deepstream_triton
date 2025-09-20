@@ -1,0 +1,76 @@
+%YAML:1.0
+################################################################################
+# Enhanced NvDCF Tracker Configuration with ReID for Multi-Camera Tracking
+# Production-grade configuration for cross-camera re-identification
+################################################################################
+
+BaseConfig:
+  minDetectorConfidence: 0.25    # Minimum confidence for detection consideration
+
+TargetManagement:
+  enableBboxUnClipping: 1        # Unclip bboxes at image borders
+  maxTargetsPerStream: 200       # Increased for multi-camera scenarios
+  
+  # [Creation & Termination Policy]
+  minIouDiff4NewTarget: 0.5      # IoU threshold for new target creation
+  minTrackerConfidence: 0.2      # Confidence threshold for shadow tracking
+  probationAge: 3                # Frames to confirm new targets
+  maxShadowTrackingAge: 90       # Extended for cross-camera gaps
+  earlyTerminationAge: 1         # Early termination threshold
+
+TrajectoryManagement:
+  useUniqueID: 1                 # Use 64-bit unique IDs
+  enableReAssoc: 1               # Enable re-association (critical for ReID)
+
+DataAssociator:
+  dataAssociatorType: 0          # DEFAULT associator
+  associationMatcherType: 1      # CASCADED matching for better accuracy
+  checkClassMatch: 1             # Only associate same-class objects
+  
+  # [Association Metrics - Tuned for ReID]
+  minMatchingScore4Overall: 0.0      # Overall score threshold
+  minMatchingScore4SizeAndShape: 0.6 # Size/shape score
+  minMatchingScore4Appearance: 0.5   # Increased for ReID importance
+  minMatchingScore4Motion: 0.2       # Motion score
+
+StateEstimator:
+  stateEstimatorType: 2          # REGULAR estimator for better tracking
+  
+  # [Dynamics Modeling - Optimized for multi-camera]
+  processNoiseVar4Loc: 2.0       # Location noise variance
+  processNoiseVar4Size: 1.0      # Size noise variance
+  processNoiseVar4Vel: 0.1       # Velocity noise variance
+  measurementNoiseVar4Detector: 4.0   # Detector noise variance
+  measurementNoiseVar4Tracker: 16.0   # Tracker noise variance
+
+ReID:
+  reidType: 2                    # Reid based reassociation (CRITICAL)
+  batchSize: 100                 # ReID network batch size
+  workspaceSize: 1000            # Workspace in MB
+  reidFeatureSize: 256           # Feature vector dimension
+  reidHistorySize: 100           # Features stored per object
+  inferDims: [256, 128, 3]       # ReID network input dimensions (H, W, C)
+  networkMode: 1                 # FP16 precision
+  inputOrder: 0                  # NCHW format
+  
+  # [Advanced ReID Parameters]
+  reidExtractionInterval: 0      # Extract every frame (0) for continuous tracking
+  addFeatureNormalization: 1     # L2 normalize features
+  keepAspc: 1                    # Maintain aspect ratio
+  netScaleFactor: 0.01735207     # Network normalization factor
+  minVisibility4GalleryUpdate: 0.6  # Minimum visibility for feature update
+  
+  # [Cross-Camera ReID Settings]
+  reidAmbiguityAge: 2            # Frames to resolve ambiguous matches
+  reidReAssocMatThreshold: 0.2   # Re-association threshold
+  outputReidTensor: 1            # Enable ReID tensor output
+
+FeatureMatching:
+  featureMatchingAlgorithm: 1    # Hungarian algorithm for optimal assignment
+  matchingThreshold: 0.75        # Increased threshold for cross-camera accuracy
+  trajectorySetSize: 50          # Increased for multi-camera scenarios
+  
+  # [Advanced Feature Matching]
+  spatialThreshold: 0.1          # Spatial consistency threshold
+  temporalThreshold: 10          # Temporal consistency (frames)
+  crossCameraThreshold: 0.8      # Cross-camera matching threshold
