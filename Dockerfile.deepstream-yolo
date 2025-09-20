@@ -1,0 +1,44 @@
+# Dockerfile for building DeepStream with marcoslucianops/DeepStream-Yolo parser
+# Based on NVIDIA DeepStream 7.1 with Triton support (CUDA 12.6)
+
+FROM nvcr.io/nvidia/deepstream:7.1-triton-multiarch
+
+# Set environment variables for CUDA version (DeepStream 7.1 uses CUDA 12.6)
+ENV CUDA_VER=12.6
+ENV CUDA_VERSION=12.6
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    pkg-config \
+    cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /workspace
+
+# Clone the marcoslucianops/DeepStream-Yolo repository
+RUN git clone https://github.com/marcoslucianops/DeepStream-Yolo.git
+
+# Set the working directory to the cloned repository
+WORKDIR /workspace/DeepStream-Yolo
+
+# Clean and compile the custom parser library
+RUN make -C nvdsinfer_custom_impl_Yolo clean
+RUN CUDA_VER=12.6 make -C nvdsinfer_custom_impl_Yolo
+
+# Verify the library was built successfully
+RUN ls -la nvdsinfer_custom_impl_Yolo/libnvdsinfer_custom_impl_Yolo.so
+
+# Set back to workspace directory
+WORKDIR /workspace
+
+# Copy the built library to a standard location for easy access
+RUN cp DeepStream-Yolo/nvdsinfer_custom_impl_Yolo/libnvdsinfer_custom_impl_Yolo.so /workspace/
+
+# Set environment variable for library path
+ENV DEEPSTREAM_YOLO_LIB_PATH=/workspace/DeepStream-Yolo/nvdsinfer_custom_impl_Yolo/libnvdsinfer_custom_impl_Yolo.so
+
+# Default command
+CMD ["/bin/bash"]

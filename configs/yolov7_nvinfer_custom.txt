@@ -1,0 +1,66 @@
+# YOLOv7 Custom Inference Configuration for DeepStream
+# Uses nvinfer with custom parsing function for proper bounding box detection
+# This replaces the Triton nvinferserver config to enable actual object detection
+
+[property]
+gpu-id=0
+# Use pre-built TensorRT engine directly
+model-engine-file=/workspace/models/yolov7_fp16/1/model.plan
+# Input preprocessing - YOLOv7 expects normalized input [0,1]
+net-scale-factor=0.0039215697906911373
+offsets=0.0;0.0;0.0
+model-color-format=0
+# Model dimensions - must match TensorRT engine
+model-input-width=640
+model-input-height=640
+# Number of classes (COCO dataset)
+num-detected-classes=80
+# Inference interval (0 = every frame)
+interval=0
+# Unique ID for this inference engine
+gie-unique-id=1
+# Processing mode (1 = primary detection)
+process-mode=1
+# Network type (0 = detector)
+network-type=0
+# Cluster mode for DBSCAN clustering
+cluster-mode=2
+maintain-aspect-ratio=1
+symmetric-padding=1
+# Batch size - must match TensorRT engine
+batch-size=2
+# Network mode: 2 = FP16
+network-mode=2
+# Label file path
+labelfile-path=/workspace/labels/coco_labels.txt
+
+# ⚠️ CRITICAL: Custom parsing function for YOLOv7 output format
+parse-bbox-func-name=NvDsInferParseYolov7
+custom-lib-path=/workspace/nvdsinfer_custom_impl_yolov7/libnvdsinfer_custom_impl_Yolo.so
+
+[class-attrs-all]
+# Non-Maximum Suppression threshold
+nms-iou-threshold=0.45
+# Pre-cluster threshold (confidence threshold)
+pre-cluster-threshold=0.25
+# Top-K results to keep
+topk=300
+
+# Per-class thresholds for better accuracy
+[class-attrs-0]  # person
+pre-cluster-threshold=0.3
+
+[class-attrs-1]  # bicycle  
+pre-cluster-threshold=0.25
+
+[class-attrs-2]  # car
+pre-cluster-threshold=0.3
+
+[class-attrs-3]  # motorbike
+pre-cluster-threshold=0.25
+
+[class-attrs-5]  # bus
+pre-cluster-threshold=0.3
+
+[class-attrs-7]  # truck
+pre-cluster-threshold=0.3

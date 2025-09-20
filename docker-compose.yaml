@@ -1,0 +1,92 @@
+
+services:
+  # Triton Inference Server
+  triton:
+    image: nvcr.io/nvidia/tritonserver:24.08-py3
+    container_name: triton-inference-server
+    ports:
+      - "8000:8000"    # HTTP
+      - "8001:8001"    # gRPC
+      - "8002:8002"    # Metrics
+    volumes:
+      - ./models:/models
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - DISPLAY=${DISPLAY}
+    command: >
+      tritonserver
+      --model-repository=/models
+      --allow-grpc=true
+      --allow-http=true
+      --allow-metrics=true
+      --log-verbose=1
+      --backend-config=tensorrt,optimization-level=2
+      --backend-config=tensorrt,max-batch-size=4
+      --model-control-mode=explicit
+      --load-model=yolov7_fp16
+    networks:
+      - deepstream-triton
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # DeepStream Application  
+  deepstream:
+    image: nvcr.io/nvidia/deepstream:7.1-triton-multiarch
+    container_name: deepstream-app
+    depends_on:
+      triton:
+        condition: service_healthy
+    volumes:
+      - ./videos:/workspace/videos
+      - ./configs:/workspace/configs
+      - ./output:/workspace/output
+      - ./labels:/workspace/labels
+      - ./trackers:/workspace/trackers
+      - ./nvdsinfer_custom_impl_yolov7:/workspace/nvdsinfer_custom_impl_yolov7
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ./models:/workspace/models
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - DISPLAY=${DISPLAY}
+      - GST_DEBUG=2
+      - CUDA_CACHE_DISABLE=0
+      - TRITON_SERVER_URL=triton:8001
+    working_dir: /workspace
+    command: >
+      bash -c "
+      echo 'Waiting for Triton server to be ready...' &&
+      sleep 10 &&
+      deepstream-app -c configs/deepstream_dual_video_triton.txt
+      "
+    networks:
+      - deepstream-triton
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: "no"
+    stdin_open: true
+    tty: true
+
+networks:
+  deepstream-triton:
+    driver: bridge
+
+volumes:
+  models:
+  output:

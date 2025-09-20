@@ -1,0 +1,36 @@
+name: "yolov7_fp16"
+platform: "tensorrt_plan"
+max_batch_size: 2
+input [
+  {
+    name: "input"
+    data_type: TYPE_FP32
+    dims: [ 3, 640, 640 ]
+  }
+]
+output [
+  {
+    name: "output"
+    data_type: TYPE_FP32
+    dims: [ 25200, 6 ]
+  }
+]
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_GPU
+    gpus: [ 0 ]
+  }
+]
+
+dynamic_batching {
+  max_queue_delay_microseconds: 100
+  preferred_batch_size: [ 2 ]
+}
+
+optimization {
+  cuda {
+    graphs: true
+  }
+}

@@ -1,0 +1,71 @@
+# YOLOv7 Triton Inference Configuration for DeepStream
+# Uses Triton Inference Server for TensorRT FP16 model inference
+
+[property]
+gpu-id=0
+# Triton server URL (using Docker service name)
+infer-server-url=triton:8001
+# Model name in Triton model repository
+model-name=yolov7_fp16
+# Model version (use 1 as default)
+version=1
+# Batch size for inference
+batch-size=2
+# Input tensor name as defined in Triton config
+input-tensor-name=input
+# Output tensor names from Triton model
+output-tensor-name=output
+# Input preprocessing
+net-scale-factor=0.0039215697906911373
+offsets=0.0;0.0;0.0
+model-color-format=0
+# Model dimensions
+model-input-width=640
+model-input-height=640
+# Number of classes (COCO dataset)
+num-detected-classes=80
+# Inference interval (0 = every frame)
+interval=0
+# Unique ID for this inference engine
+gie-unique-id=1
+# Processing mode (1 = primary detection)
+process-mode=1
+# Network type (0 = detector)
+network-type=0
+# Cluster mode for DBSCAN clustering
+cluster-mode=2
+maintain-aspect-ratio=1
+# Label file path
+labelfile-path=/workspace/labels/coco_labels.txt
+# Enable Triton gRPC client
+use-triton-grpc-client=1
+# Triton model input format
+triton-model-input-datatype=FP32
+triton-model-output-datatype=FP32
+
+[class-attrs-all]
+# Non-Maximum Suppression threshold
+nms-iou-threshold=0.45
+# Pre-cluster threshold (confidence threshold)
+pre-cluster-threshold=0.25
+# Top-K results to keep
+topk=300
+
+# Per-class thresholds for better accuracy
+[class-attrs-0]  # person
+pre-cluster-threshold=0.3
+
+[class-attrs-1]  # bicycle
+pre-cluster-threshold=0.25
+
+[class-attrs-2]  # car
+pre-cluster-threshold=0.3
+
+[class-attrs-3]  # motorbike
+pre-cluster-threshold=0.25
+
+[class-attrs-5]  # bus
+pre-cluster-threshold=0.3
+
+[class-attrs-7]  # truck
+pre-cluster-threshold=0.3
