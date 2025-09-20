@@ -38,12 +38,17 @@ infer_config {
     labelfile_path: "/workspace/labels/coco_labels.txt"
     detection {
       num_detected_classes: 80
+      custom_parse_bbox_func: "NvDsInferParseYolo"
       nms {
         confidence_threshold: 0.25
         iou_threshold: 0.45
         topk: 300
       }
     }
+  }
+
+  custom_lib {
+    path: "/workspace/nvdsinfer_custom_impl_yolov7/libnvdsinfer_custom_impl_Yolo.so"
   }
 
   extra {

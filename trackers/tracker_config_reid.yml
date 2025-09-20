@@ -1,0 +1,41 @@
+%YAML:1.0
+NvDCF:
+  # Basic tracking parameters
+  useBufferedOutput: 0
+  maxTargetsPerStream: 150
+  maxShadowTrackingAge: 90
+  probationAge: 3
+  earlyTerminationAge: 1
+  
+  # ReID Configuration
+  reidType: 2
+  reidFeatureSize: 512
+  reidHistorySize: 100
+  reidExtractionInterval: 1
+  reidMatchThreshold: 0.2
+  reidTrackingAge: 1000
+  reidAmbiguityAge: 2
+  reidReAssocMatThreshold: 0.2
+  outputReidTensor: 1
+  
+  # ReID Model Configuration  
+  useTritonReID: 1
+  tritonReIDModelName: "reid_resnet50"
+  tritonReIDServerURL: "triton:8001"
+  reidNetworkSize: [256, 128, 3]
+  
+  # Enhanced tracking for ReID
+  dataAssociateCostMatrixType: 0
+  associationMatcherType: 0
+  checkClassMatch: 1
+  
+  # Feature extraction parameters
+  featureHistorySize: 100
+  reidFeatureNormalization: 1
+  addFeatureNormalization: 1
+  useBatchedNmsForReIDFeatureExtraction: 1
+  
+  # Cross-camera association
+  enableCrossCameraAssociation: 1
+  crossCameraAssociationThreshold: 0.3
+  globalTrackIdOffset: 10000

@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  triton-server:
+    image: nvcr.io/nvidia/tritonserver:24.08-py3
+    container_name: triton-reid-server
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - CUDA_CACHE_DISABLE=0
+    ports:
+      - "8000:8000"
+      - "8001:8001" 
+      - "8002:8002"
+    volumes:
+      - ./models:/models:ro
+      - ./logs:/logs
+    command: >
+      tritonserver 
+      --model-repository=/models 
+      --allow-grpc=true 
+      --allow-http=true
+      --grpc-port=8001
+      --http-port=8000
+      --metrics-port=8002
+      --log-verbose=1
+      --model-control-mode=explicit
+      --load-model=yolov7_fp16
+      --load-model=reid_resnet50
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - deepstream-triton-reid
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 4G
+
+networks:
+  deepstream-triton-reid:
+    driver: bridge
+    name: deepstream_triton_reid
